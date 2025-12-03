@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karaoke</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: Arial, sans-serif; /* Eine gut lesbare Schriftart */
+            font-size: 2.5em; /* Große Schrift */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Mindesthöhe des Viewports */
+            margin: 0;
+            overflow: hidden; /* Verhindert Scrollbalken, falls Text überläuft */
+        }
+
+        #karaoke-display {
+            text-align: center;
+            padding: 20px;
+            max-width: 80%; /* Begrenzt die Breite des Textblocks */
+        }
+
+        #karaoke-display p {
+            margin: 0.5em 0; /* Abstand zwischen den Zeilen */
+            opacity: 0.7; /* Normale Zeilen etwas weniger prominent */
+            transition: opacity 0.3s ease-in-out; /* Sanfter Übergang beim Ändern der Opazität */
+        }
+
+        #karaoke-display p.bold-line {
+            font-weight: bold;
+            font-size: 1.2em; /* Die fette Zeile noch etwas größer */
+            opacity: 1; /* Die fette Zeile ist voll sichtbar */
+        }
+    </style>
+</head>
+<body>
+    <div id="karaoke-display">
+        <!-- Der Text wird hier von JavaScript eingefügt -->
+    </div>
+
+    <!-- Das Audio-Element für die Musik -->
+    <audio id="karaoke-audio" src="Andreas%20Bourani%20-%20Auf%20uns%20-%20Text.mp3" preload="auto"></audio>
+
+    <script>
+        // +++ Audio-bezogene Variablen und Funktionen +++
+        const karaokeAudio = document.getElementById('karaoke-audio');
+        let audioStarted = false; // Flag, um zu prüfen, ob Audio bereits gestartet wurde
+
+        function startAudio() {
+            if (!audioStarted && karaokeAudio) {
+                karaokeAudio.play().catch(e => {
+                    console.error("Fehler beim Abspielen der Audiodatei:", e);
+                    // Hier könntest du eine Meldung an den Benutzer anzeigen,
+                    // falls die automatische Wiedergabe blockiert wurde.
+                });
+                audioStarted = true;
+                // Sobald die Musik erfolgreich gestartet wurde, aktivieren wir den timeupdate-Listener
+                karaokeAudio.addEventListener('timeupdate', handleTimeUpdate);
+            }
+        }
+
+        function stopAudio() {
+            if (karaokeAudio && !karaokeAudio.paused) {
+                karaokeAudio.pause();
+                karaokeAudio.currentTime = 0; // Setzt die Wiedergabe auf den Anfang zurück
+                audioStarted = false; // Setzt das Flag zurück, falls man neu starten möchte
+                karaokeAudio.removeEventListener('timeupdate', handleTimeUpdate); // Listener entfernen
+            }
+        }
+        // +++ Ende Audio-bezogene Variablen und Funktionen +++
+
+        // Raw text data with timestamps
+        const rawTextData = [
+	"[00:00.00],\"AUF UNS\"",
+	"[00:05.43],\"+++\"",
+	"[00:07.43],\"Wer friert uns diesen Moment ein?\"",
+	"[00:11.18],\"Besser kann es nicht sein\"",
+	"[00:14.85],\"Denkt an die Tage, die hinter uns liegen\"",
+	"[00:17.76],\"Wie lang wir Freude und Tränen schon teilen\"",
+	"[00:22.57],\"Hier geht jeder für jeden durch's Feuer\"",
+	"[00:25.72],\"Im Regen stehen wir niemals allein\"",
+	"[00:29.91],\"Und solange Aggregate uns steuern\"",
+	"[00:33.51],\"Wird das auch immer so sein\"",
+	"[00:35.64],\"Ein Hoch auf das, was vor uns liegt\"",
+	"[00:39.76],\"Dass es noch Autos für uns gibt\"",
+	"[00:43.12],\"Ein Hoch auf das, was uns vereint\"",
+	"[00:47.12],\"Auf Powertrain (auf Powertrain)\"",
+	"[00:50.53],\"Ein Hoch auf uns (uns)\"",
+	"[00:54.11],\"Auf unsre Werke\"",
+	"[00:57.97],\"den Antriebsstrang\"",
+	"[01:01.62],\"Der immer bleibt\"",
+	"[01:05.43],\"Ein Hoch auf uns (uns)\"",
+	"[01:09.23],\"Auf jetzt und ewig\"",
+	"[01:12.88],\"Auf diesen BLA\"",
+	"[01:16.85],\"Auf den Ola\"",
+	"[01:22.49],\"Wir schweißen, bohren, bauen starke Antriebe\"",
+	"[01:26.04],\"In Perfektion jeden Tag\"",
+	"[01:30.09],\"(One Love) Vom Rohteil an mit viel Liebe\"",
+	"[01:33.57],\"Vom ersten Teil bis ins Grab\"",
+	"[01:35.68],\"Ein Hoch auf das, was vor uns liegt\"",
+	"[01:39.68],\"Dass es noch Luxus für uns gibt\"",
+	"[01:43.00],\"Ein Hoch auf das, was uns vereint\"",
+	"[01:47.13],\"Auf Powertrain (auf Powertrain)\"",
+	"[01:50.57],\"Ein Hoch auf uns (uns)\"",
+	"[01:54.26],\"Auf unsre Werke\"",
+	"[01:57.86],\"den Antriebsstrang\"",
+	"[02:01.51],\"Der immer bleibt\"",
+	"[02:05.24],\"Ein Hoch auf uns (uns)\"",
+	"[02:09.22],\"Auf jetzt und ewig\"",
+	"[02:13.07],\"Auf diesen BLA\"",
+	"[02:16.71],\"Auf den Ola\"",
+	"[02:22.45],\"Ein Feuerwerk aus Batterien\"",
+	"[02:26.08],\"Ein Feuerwerk zieht durch die Nacht\"",
+	"[02:29.94],\"Viele Verbrenner sind geblieben\"",
+	"[02:33.69],\"Ein Aggregat, das uns unsterblich macht\"",
+	"[02:39.25],\"Unsterblich macht, o-laaaaa, o-laaaa, o-laaaa…\"",
+	"[02:43.94],\"+++\"",
+	"[02:50.46],\"Ein Hoch auf das, was vor uns liegt\"",
+	"[02:54.71],\"Dass es noch Luxus für uns gibt\"",
+	"[02:58.18],\"Ein Hoch auf das, was uns vereint\"",
+	"[03:02.27],\"Auf Powertrain (auf Powertrain)\"",
+	"[03:05.69],\"Ein Hoch auf uns (uns)\"",
+	"[03:09.21],\"Auf unsre Werke\"",
+	"[03:12.90],\"den Antriebsstrang\"",
+	"[03:16.72],\"Der immer bleibt\"",
+	"[03:20.49],\"Ein Hoch auf uns (uns)\"",
+	"[03:24.06],\"Auf jetzt und ewig\"",
+	"[03:27.82],\"Auf diesen BLA\"",
+	"[03:31.63],\"Auf den Ola\"",
+	"[03:35.35],\"Ein Hoch auf uns\"",
+	"[03:37.40],\"Ein Feuerwerk aus Batterien\"",
+	"[03:39.41],\"Ein Hoch auf uns\"",
+	"[03:41.14],\"Ein Feuerwerk zieht durch die Nacht\"",
+	"[03:43.10],\"Ein Hoch auf uns\"",
+	"[03:44.84],\"Viele Verbrenner sind geblieben\"",
+	"[03:47.72],\"Auf uns\"",
+	"[03:49.02],\"+++\""
+        ];
+
+        // Parse the raw text data into an array of objects { timestamp: ms, text: string }
+        const textLines = rawTextData.map(line => {
+            const parts = line.match(/^\[(\d{2}):(\d{2})\.(\d{2})\],"(.*)"$/);
+            if (!parts) {
+                console.error("Fehler beim Parsen der Zeile:", line);
+                return null;
+            }
+            const minutes = parseInt(parts[1], 10);
+            const seconds = parseInt(parts[2], 10);
+            const centiseconds = parseInt(parts[3], 10); // .00 are centiseconds
+            const totalMilliseconds = (minutes * 60 * 1000) + (seconds * 1000) + (centiseconds * 10); // *10 for ms
+            const text = parts[4];
+            return { timestamp: totalMilliseconds, text: text };
+        }).filter(Boolean); // Remove any null entries from parsing errors
+
+        let currentLineIndex = 0; // Dieser Index zeigt auf die Zeile, deren Zeitstempel gerade erreicht wurde
+        const displayContainer = document.getElementById('karaoke-display');
+
+        function updateDisplay() {
+            displayContainer.innerHTML = ''; // Alten Inhalt löschen
+
+            if (currentLineIndex >= textLines.length) {
+                // Alle Zeilen verarbeitet, Anzeige leeren und Audio stoppen
+                displayContainer.innerHTML = '';
+                stopAudio();
+                return;
+            }
+
+            // Finde die tatsächliche Zeile, die fett angezeigt werden soll.
+            // Dies ist die erste nicht-Bindestrich-Zeile ab currentLineIndex.
+            let boldLineToDisplayIndex = currentLineIndex;
+            while (boldLineToDisplayIndex < textLines.length && textLines[boldLineToDisplayIndex].text.trim() === '-') {
+                boldLineToDisplayIndex++;
+            }
+
+            // Wenn ab currentLineIndex nur noch Bindestrich-Zeilen oder das Ende erreicht ist
+            if (boldLineToDisplayIndex >= textLines.length) {
+                displayContainer.innerHTML = ''; // Anzeige leeren
+                stopAudio();
+                return;
+            }
+
+            // Die aktuelle (fette) Zeile anzeigen
+            const boldLine = document.createElement('p');
+            boldLine.classList.add('bold-line');
+            boldLine.textContent = textLines[boldLineToDisplayIndex].text;
+            displayContainer.appendChild(boldLine);
+
+            // Die nächsten drei normalen Zeilen anzeigen, beginnend direkt nach der fettgedruckten Zeile
+            let normalLinesCount = 0;
+            for (let i = boldLineToDisplayIndex + 1; i < textLines.length && normalLinesCount < 3; i++) {
+                const normalLine = document.createElement('p');
+                normalLine.textContent = textLines[i].text;
+                displayContainer.appendChild(normalLine);
+                normalLinesCount++;
+            }
+        }
+
+        // Funktion zur Handhabung der automatischen Zeilenaktualisierung basierend auf der Audiozeit
+        function handleTimeUpdate() {
+            const currentTimeMs = karaokeAudio.currentTime * 1000;
+
+            // Finde den Index der nächsten Zeile, deren Zeitstempel erreicht oder überschritten wurde
+            let nextLineIndex = currentLineIndex;
+            while (nextLineIndex < textLines.length - 1 && currentTimeMs >= textLines[nextLineIndex + 1].timestamp) {
+                nextLineIndex++;
+            }
+
+            // Wenn sich der aktuelle Zeilenindex geändert hat, aktualisiere die Anzeige
+            if (nextLineIndex !== currentLineIndex) {
+                currentLineIndex = nextLineIndex;
+                updateDisplay();
+            }
+
+            // Wenn wir die letzte Zeile überschritten haben und die Musik noch läuft,
+            // stellen wir sicher, dass die Anzeige geleert und die Musik gestoppt wird.
+            // Füge einen kleinen Puffer hinzu, falls die letzte Zeile sehr kurz ist.
+            // Hier 5 Sekunden Puffer nach dem Zeitstempel der letzten Zeile.
+            if (currentLineIndex >= textLines.length - 1 && currentTimeMs >= textLines[textLines.length - 1].timestamp + 5000) {
+                if (displayContainer.innerHTML !== '') { // Nur leeren, wenn nicht schon leer
+                    displayContainer.innerHTML = '';
+                    stopAudio();
+                }
+            }
+        }
+
+        // Event-Listener für die erste Benutzerinteraktion (z.B. beliebiger Tastendruck)
+        document.addEventListener('keydown', () => {
+            startAudio(); // Startet die Musik und aktiviert den timeupdate-Listener
+        });
+
+        // Initialer Aufruf, um den ersten Text anzuzeigen, wenn die Seite geladen wird (bevor die Musik startet)
+        updateDisplay();
+    </script>
+</body>
+</html>
